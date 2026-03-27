@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduManage — Learn Without Limits{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Join EduManage and access world-class courses, earn verified certificates, and advance your career.{% endblock %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
+        .star-filled { color: #f59e0b; }
+        .star-empty { color: #d1d5db; }
+        .gradient-hero { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
+        .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.12); }
+        .progress-bar { transition: width 0.6s ease; }
+        .nav-link { position: relative; }
+        .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: #2563eb; transition: width 0.2s ease; }
+        .nav-link:hover::after { width: 100%; }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-white text-slate-800 antialiased" x-data="{ mobileOpen: false, userMenu: false, searchFocused: false }">
+
+<!-- ===== TOP NAVIGATION BAR ===== -->
+<nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+
+            <!-- Left: Logo + Browse -->
+            <div class="flex items-center gap-6">
+                <!-- Hamburger (mobile) -->
+                <button @click="mobileOpen = !mobileOpen" class="lg:hidden p-1.5 rounded-md text-slate-500 hover:bg-slate-100">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <!-- Logo -->
+                <a href="{% url 'dashboard' %}" class="flex items-center gap-2 flex-shrink-0">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+                    </div>
+                    <span class="text-xl font-extrabold text-blue-600 tracking-tight hidden sm:block">EduManage</span>
+                </a>
+                <!-- Desktop Nav Links -->
+                <div class="hidden lg:flex items-center gap-1">
+                    <a href="{% url 'course-list' %}" class="nav-link px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">Browse Courses</a>
+                    {% if request.user.is_authenticated %}
+                    <a href="{% url 'my-learning' %}" class="nav-link px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">My Learning</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Center: Search Bar -->
+            <div class="hidden md:flex flex-1 max-w-lg mx-6">
+                <form class="w-full" action="{% url 'course-list' %}" method="GET">
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="search" name="q" placeholder="What do you want to learn?" class="w-full pl-10 pr-4 py-2 text-sm border border-slate-300 rounded-full bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all">
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right: Auth Buttons -->
+            <div class="flex items-center gap-3">
+                {% if request.user.is_authenticated %}
+                <!-- Authenticated user menu -->
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" @click.outside="open = false" class="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-slate-100 transition-colors">
+                        <img class="h-8 w-8 rounded-full ring-2 ring-blue-100" 
+                             src="https://ui-avatars.com/api/?name={{ request.user.first_name|default:request.user.username }}+{{ request.user.last_name }}&background=2563eb&color=fff&rounded=true" 
+                             alt="{{ request.user.first_name }}">
+                        <span class="hidden sm:block text-sm font-semibold text-slate-700">{{ request.user.first_name|default:request.user.username }}</span>
+                        <svg class="h-4 w-4 text-slate-400 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <!-- Dropdown -->
+                    <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-50">
+                        <div class="px-4 py-3 border-b border-slate-100">
+                            <p class="text-sm font-semibold text-slate-900">{{ request.user.first_name }} {{ request.user.last_name }}</p>
+                            <p class="text-xs text-slate-500 truncate">{{ request.user.email }}</p>
+                        </div>
+                        <a href="{% url 'my-learning' %}" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                            My Learning
+                        </a>
+                        <a href="{% url 'course-list' %}" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            Browse All Courses
+                        </a>
+                        <div class="border-t border-slate-100 mt-1">
+                            <a href="{% url 'logout' %}" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-red-50 hover:text-red-600 transition-colors">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                Sign out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {% else %}
+                <!-- Guest user -->
+                <a href="{% url 'login' %}" class="hidden sm:block text-sm font-semibold text-blue-600 hover:text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">Log in</a>
+                <a href="{% url 'signup' %}" class="text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-sm transition-colors">Join for Free</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div x-show="mobileOpen" x-cloak class="lg:hidden border-t border-slate-200 bg-white">
+        <div class="px-4 py-3 space-y-1">
+            <form action="{% url 'course-list' %}" method="GET" class="mb-3">
+                <input type="search" name="q" placeholder="Search courses..." class="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </form>
+            <a href="{% url 'dashboard' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100">Home</a>
+            <a href="{% url 'course-list' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100">Browse Courses</a>
+            {% if request.user.is_authenticated %}
+            <a href="{% url 'my-learning' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100">My Learning</a>
+            <a href="{% url 'logout' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50">Sign Out</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50">Log in</a>
+            <a href="{% url 'signup' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 text-center mt-2">Join for Free</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- ===== Flash Messages ===== -->
+{% if messages %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+    {% for message in messages %}
+    <div class="mb-3 flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium shadow-sm
+        {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-700
+        {% elif message.tags == 'success' %}bg-emerald-50 border border-emerald-200 text-emerald-700
+        {% else %}bg-blue-50 border border-blue-200 text-blue-700{% endif %}">
+        {% if message.tags == 'error' %}
+        <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {% elif message.tags == 'success' %}
+        <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {% else %}
+        <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {% endif %}
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ===== MAIN CONTENT ===== -->
+<main>{% block content %}{% endblock %}</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="bg-slate-900 text-slate-400 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <!-- Brand -->
+            <div class="col-span-1 md:col-span-1">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+                    </div>
+                    <span class="text-white font-extrabold text-lg">EduManage</span>
+                </div>
+                <p class="text-sm leading-relaxed">The world's best online learning platform. Learn skills that matter.</p>
+            </div>
+            <!-- Links -->
+            <div>
+                <h4 class="text-white font-semibold mb-3 text-sm">Platform</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="{% url 'course-list' %}" class="hover:text-white transition-colors">Browse Courses</a></li>
+                    <li><a href="{% url 'signup' %}" class="hover:text-white transition-colors">Join for Free</a></li>
+                    <li><a href="{% url 'login' %}" class="hover:text-white transition-colors">Sign In</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-3 text-sm">Learning</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-white transition-colors">Certificates</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Degree Programs</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">For Business</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-3 text-sm">Company</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-white transition-colors">About</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-slate-800 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <p class="text-xs">© {% now "Y" %} EduManage Inc. All rights reserved.</p>
+            <div class="flex gap-4 text-xs">
+                <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition-colors">Terms of Use</a>
+                <a href="#" class="hover:text-white transition-colors">Cookie Policy</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

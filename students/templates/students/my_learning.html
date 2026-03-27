@@ -1,0 +1,113 @@
+{% extends 'students/base.html' %}
+{% block title %}My Learning | EduManage{% endblock %}
+
+{% block content %}
+<div class="bg-slate-900 text-white py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-extrabold">My Learning</h1>
+        <p class="text-slate-400 mt-1">Track your progress and pick up where you left off.</p>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-center">
+            <div class="text-3xl font-extrabold text-blue-600">{{ enrollments|length }}</div>
+            <div class="text-xs text-slate-500 mt-1 font-medium">Courses Enrolled</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-center">
+            <div class="text-3xl font-extrabold text-emerald-600">{{ certificates|length }}</div>
+            <div class="text-xs text-slate-500 mt-1 font-medium">Certificates Earned</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-center">
+            <div class="text-3xl font-extrabold text-violet-600">{{ completed_videos }}</div>
+            <div class="text-xs text-slate-500 mt-1 font-medium">Lessons Completed</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-center">
+            <div class="text-3xl font-extrabold text-amber-500">{{ student.enrollment_number|default:"—" }}</div>
+            <div class="text-xs text-slate-500 mt-1 font-medium">Student ID</div>
+        </div>
+    </div>
+
+    <!-- Enrolled Courses -->
+    <h2 class="text-xl font-bold text-slate-900 mb-5">In-Progress Courses</h2>
+    {% if enrollments %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        {% for item in enrollments %}
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden card-hover">
+            <!-- Thumbnail -->
+            <div class="relative h-36 {% if not item.course.thumbnail_url %}bg-gradient-to-br from-blue-600 to-purple-700{% endif %}">
+                {% if item.course.thumbnail_url %}
+                <img src="{{ item.course.thumbnail_url }}" alt="{{ item.course.name }}" class="w-full h-full object-cover">
+                {% else %}
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <svg class="w-10 h-10 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                </div>
+                {% endif %}
+                <!-- Progress badge -->
+                <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+                    {{ item.progress }}%
+                </div>
+            </div>
+
+            <div class="p-5">
+                <p class="text-xs text-blue-600 font-semibold mb-1">{{ item.course.department.name }}</p>
+                <h3 class="font-bold text-slate-900 mb-1 line-clamp-2">{{ item.course.name }}</h3>
+                <p class="text-xs text-slate-400 mb-3">{{ item.course.instructor_name }}</p>
+
+                <!-- Progress Bar -->
+                <div class="mb-3">
+                    <div class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>{{ item.completed_count }}/{{ item.total_videos }} lessons</span>
+                        <span>{{ item.progress }}% complete</span>
+                    </div>
+                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="progress-bar h-full rounded-full {% if item.progress == 100 %}bg-emerald-500{% else %}bg-blue-500{% endif %}" style="width: {{ item.progress }}%"></div>
+                    </div>
+                </div>
+
+                <a href="{% url 'course-detail' item.course.pk %}" class="block w-full text-center text-sm font-semibold {% if item.progress == 100 %}bg-emerald-100 text-emerald-700 border border-emerald-200{% else %}bg-blue-600 text-white hover:bg-blue-700{% endif %} py-2.5 rounded-xl transition-colors">
+                    {% if item.progress == 100 %}✓ Completed{% else %}Continue Learning →{% endif %}
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 mb-12">
+        <svg class="mx-auto h-12 w-12 text-slate-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        <h3 class="text-lg font-bold text-slate-700 mb-2">No courses started yet</h3>
+        <p class="text-slate-500 text-sm mb-5">Explore our catalog and enroll in your first course!</p>
+        <a href="{% url 'course-list' %}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+            Browse Courses →
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Certificates Section -->
+    {% if certificates %}
+    <h2 class="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2">
+        <svg class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        Earned Certificates
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for cert in certificates %}
+        <div class="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl p-5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-amber-400 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                </div>
+                <div>
+                    <p class="font-bold text-amber-900 text-sm">{{ cert.course.name }}</p>
+                    <p class="text-xs text-amber-700">Issued {{ cert.issued_on|date:"N j, Y" }}</p>
+                </div>
+            </div>
+            <a href="{% url 'certificate' cert.certificate_code %}" target="_blank" class="flex-shrink-0 text-xs font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-3 py-1.5 rounded-lg transition-colors">View →</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends 'students/base.html' %}
+
+{% block title %}Checkout: {{ course.name }} | Enterprise EduManage{% endblock %}
+
+{% block content %}
+<div class="mb-4 text-sm font-medium">
+    <a href="{% url 'course-detail' course.pk %}" class="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 inline-flex">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        Cancel and return to course
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Checkout Form -->
+    <div class="lg:col-span-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="border-b border-slate-200 bg-slate-50 px-8 py-6">
+                <h2 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                    Payment Details
+                </h2>
+                <p class="text-sm text-slate-500 mt-1">Complete your purchase to secure enrollment.</p>
+            </div>
+            
+            <form action="{% url 'process-payment' course.pk %}" method="POST" class="p-8 space-y-8" x-data="{ processing: false }" @submit="processing = true">
+                {% csrf_token %}
+                
+                <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex items-baseline gap-2 mb-8">
+                    <span class="text-slate-500 text-sm">Total due today:</span>
+                    <span class="text-3xl font-bold text-indigo-900">${{ course.price }}</span>
+                    <span class="text-slate-500 text-sm font-medium">USD</span>
+                </div>
+
+                <div class="space-y-4 shadow-inner bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <h3 class="font-semibold text-slate-800 border-b border-slate-200 pb-2 mb-4">Card Information</h3>
+                    
+                    <div>
+                        <label for="card_name" class="block text-sm leading-6 text-slate-600 font-semibold mb-1">Name on card</label>
+                        <input type="text" id="card_name" required value="{{ student.first_name }} {{ student.last_name }}" class="block w-full rounded-md border-0 py-2.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white">
+                    </div>
+
+                    <div>
+                        <label for="card_number" class="block text-sm leading-6 text-slate-600 font-semibold mb-1">Card number</label>
+                        <div class="relative">
+                            <input type="text" id="card_number" required placeholder="0000 0000 0000 0000" class="block w-full rounded-md border-0 py-2.5 pl-10 pr-3 text-slate-900 tracking-widest font-mono shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white" maxlength="19">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="card_expiry" class="block text-sm leading-6 text-slate-600 font-semibold mb-1">Expiration date</label>
+                            <input type="text" id="card_expiry" required placeholder="MM / YY" class="block w-full rounded-md border-0 py-2.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white" maxlength="5">
+                        </div>
+                        <div>
+                            <label for="card_cvc" class="block text-sm leading-6 text-slate-600 font-semibold mb-1">CVC / CVV</label>
+                            <input type="password" id="card_cvc" required placeholder="123" class="block w-full rounded-md border-0 py-2.5 px-3 text-slate-900 tracking-widest font-mono shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white" maxlength="4">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex items-center justify-between">
+                    <div class="text-xs text-slate-400 flex items-center gap-1">
+                        <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        Payments are securely encrypted and processed.
+                    </div>
+                    
+                    <button type="submit" x-bind:disabled="processing" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg hover:bg-indigo-500 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed transform hover:-translate-y-0.5">
+                        <span x-show="!processing">Pay ${{ course.price }}</span>
+                        
+                        <!-- Interactive loader specifically added for the "dummy processing delay" illusion -->
+                        <span x-show="processing" x-cloak class="flex items-center gap-2">
+                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="lg:col-span-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sticky top-24">
+            <h3 class="text-sm tracking-widest text-slate-500 uppercase font-bold border-b border-slate-200 pb-3 mb-6">Order Summary</h3>
+            
+            <div class="flex items-start justify-between gap-4 mb-6">
+                <div class="w-16 h-16 bg-indigo-50 text-indigo-500 flex items-center justify-center rounded-xl shadow-inner border border-indigo-100 flex-shrink-0">
+                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-900 leading-tight mb-1">{{ course.name }}</h4>
+                    <p class="text-xs text-slate-500 uppercase">{{ course.department.name|default:"General Program" }}</p>
+                </div>
+            </div>
+
+            <ul class="space-y-3 text-sm text-slate-600 mb-6 font-medium">
+                <li class="flex justify-between">
+                    <span>Full Curriculum Access</span>
+                    <span class="text-slate-900">${{ course.price }}</span>
+                </li>
+                <li class="flex justify-between">
+                    <span>{{ course.duration_months }} Months Plan</span>
+                    <span class="text-slate-900">Included</span>
+                </li>
+                <li class="flex justify-between">
+                    <span>Verified Certificate</span>
+                    <span class="text-slate-900 text-emerald-600 font-bold">Free</span>
+                </li>
+            </ul>
+
+            <div class="pt-4 border-t border-slate-200 flex items-end justify-between">
+                <span class="text-slate-900 font-bold">Total</span>
+                <span class="text-2xl font-black text-slate-900">${{ course.price }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
